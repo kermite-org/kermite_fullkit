@@ -1,0 +1,22 @@
+{
+  "name": "kermite_fullkit",
+  "version": "0.0.1",
+  "description": "All in one package for Kermite firmware development.",
+  "keywords": "keyboard, RP2040, Kermite",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/kermite-org/kermite_fillkit.git"
+  },
+  "authors": [{ "name": "Kermite" }],
+  "license": "MIT",
+  "homepage": "https://github.com/kermite-org/kermite_fullkit",
+  "frameworks": "arduino",
+  "platforms": "raspberrypi",
+  "dependencies": {
+    "adafruit/Adafruit NeoPixel": "^1.10.7",
+    "adafruit/Adafruit SSD1306": "^2.5.9"
+  },
+  "export": {
+    "exclude": [".gitignore", ".vscode", ".clang-format", "cspell.json"]
+  }
+}
