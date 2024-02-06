@@ -1,6 +1,6 @@
 {
   "name": "kermite_fullkit",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "All in one package for Kermite firmware development.",
   "keywords": "keyboard, RP2040, Kermite",
   "repository": {
