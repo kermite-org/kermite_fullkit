@@ -2,7 +2,7 @@
 
 #include "kmTypes.h"
 
-#define NumSystemParameters 10
+#define NumSystemParameters 11
 
 enum {
   SystemParameter_EmitRealtimeEvents = 0,
@@ -15,6 +15,7 @@ enum {
   SystemParameter_GlowColor,      //0-12
   SystemParameter_GlowBrightness, //0-255
   SystemParameter_GlowPattern,    //0-10(temporary)
+  SystemParameter_DebounceWaitMs, //0-200
 };
 typedef struct {
   uint8_t emitRealtimeEvents;
@@ -27,6 +28,7 @@ typedef struct {
   uint8_t glowColor;
   uint8_t glowBrightness;
   uint8_t glowPattern;
+  uint8_t debounceWaitMs;
 } T_SystemParametersSet;
 
 enum {

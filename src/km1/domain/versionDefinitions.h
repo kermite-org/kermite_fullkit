@@ -3,7 +3,7 @@
 #define Kermite_ConfigStorageFormatRevision 6
 #define Kermite_RawHidMessageProtocolRevision 5
 #define Kermite_ProfileBinaryFormatRevision 5
-#define Kermite_ConfigParametersRevision 5
+#define Kermite_ConfigParametersRevision 6
 
 #ifndef EXTR_KERMITE_VARIATION_NAME
 #define EXTR_KERMITE_VARIATION_NAME "dev"

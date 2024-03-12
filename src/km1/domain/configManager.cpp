@@ -22,7 +22,7 @@ typedef void (*ParameterChangedListener)(uint8_t eventType, uint8_t parameterInd
 static uint8_t systemParameterValues[NumSystemParameters];
 static uint16_t addrSystemParameters = 0;
 static int lazySaveTick = -1;
-static ParameterChangedListener parameterChangedListeners[4];
+static ParameterChangedListener parameterChangedListeners[4] = { 0 };
 static int numParameterChangedListeners = 0;
 
 static uint16_t parameterChangedFlags = 0;
@@ -43,6 +43,7 @@ static const T_SystemParametersSet systemParametersDefault = {
   .glowColor = 0,
   .glowBrightness = 20,
   .glowPattern = 0,
+  .debounceWaitMs = 0,
 };
 
 static T_SystemParametersSet systemParameterMaxValues = {
@@ -56,6 +57,7 @@ static T_SystemParametersSet systemParameterMaxValues = {
   .glowColor = 255,
   .glowBrightness = 255,
   .glowPattern = 255,
+  .debounceWaitMs = 200,
 };
 
 static void notifyParameterChanged(uint8_t eventType, uint8_t parameterIndex, uint8_t value) {
