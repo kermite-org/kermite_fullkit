@@ -91,7 +91,11 @@ KeyboardMainExposedState keyboardMain_exposedState = {
 typedef void (*KeySlotStateChangedCallback)(uint8_t slotIndex, bool isDown);
 KeySlotStateChangedCallback keySlotStateChangedCallback = NULL;
 
-static bool keyStateBuf[KM0_KEYBOARD__NUM_SCAN_SLOTS];
+static bool keyStateBuf[KM0_KEYBOARD__NUM_SCAN_SLOTS] = { 0 };
+static bool intermediateKeyStateBuf[KM0_KEYBOARD__NUM_SCAN_SLOTS] = { 0 };
+static bool inputKeyStateBuf[KM0_KEYBOARD__NUM_SCAN_SLOTS] = { 0 };
+
+static uint8_t debouncingTickCounter[KM0_KEYBOARD__NUM_SCAN_SLOTS] = { 0 };
 
 //----------------------------------------------------------------------
 //helpers
@@ -343,11 +347,50 @@ static void onPhysicalKeyStateChanged(uint8_t scanIndex, bool isDown) {
   }
 }
 
+static void processKeyStatesUpdate(uint8_t elapsed) {
+  uint8_t debouncingWaitMs = configManager_readParameter(SystemParameter_DebounceWaitMs);
+  if (debouncingWaitMs > 0) {
+    for (uint8_t i = 0; i < NumScanSlots; i++) {
+      uint8_t curr = intermediateKeyStateBuf[i];
+      uint8_t next = inputKeyStateBuf[i];
+
+      if (debouncingTickCounter[i] == 0) {
+      } else if (debouncingTickCounter[i] < elapsed) {
+        debouncingTickCounter[i] = 0;
+      } else {
+        debouncingTickCounter[i] -= elapsed;
+      }
+
+      if (next != curr && debouncingTickCounter[i] == 0) {
+        intermediateKeyStateBuf[i] = next;
+        debouncingTickCounter[i] = debouncingWaitMs;
+      }
+    }
+  } else {
+    for (uint8_t i = 0; i < NumScanSlots; i++) {
+      intermediateKeyStateBuf[i] = inputKeyStateBuf[i];
+    }
+  }
+
+  for (uint8_t i = 0; i < NumScanSlots; i++) {
+    uint8_t curr = keyStateBuf[i];
+    uint8_t next = intermediateKeyStateBuf[i];
+    if (!curr && next) {
+      onPhysicalKeyStateChanged(i, true);
+    }
+    if (curr && !next) {
+      onPhysicalKeyStateChanged(i, false);
+    }
+    keyStateBuf[i] = next;
+  }
+}
+
 static void processCoreLogicUpdate() {
   static uint32_t prevTickMs = 0;
   uint32_t tickMs = system_getSystemTimeMs();
   uint32_t elapsed = utils_clamp(tickMs - prevTickMs, 0, 100);
 
+  processKeyStatesUpdate(elapsed);
   keyboardCoreLogic_processTicker(elapsed);
   processKeyboardCoreLogicOutput();
 
@@ -422,6 +465,7 @@ void keyboardMain_initialize() {
   configManager_setParameterExposeFlag(SystemParameter_EmitRealtimeEvents);
   configManager_setParameterExposeFlag(SystemParameter_SystemLayout);
   configManager_setParameterExposeFlag(SystemParameter_WiringMode);
+  configManager_setParameterExposeFlag(SystemParameter_DebounceWaitMs);
 
   firmwareMetadata_initialize();
   dataMemory_initialize();
@@ -487,12 +531,9 @@ void keyboardMain_initialize() {
 // }
 
 void keyboardMain_feedKeyState(int keyIndex, bool pressed) {
-  bool current = keyStateBuf[keyIndex];
-  bool next = pressed;
-  if (next != current) {
-    onPhysicalKeyStateChanged(keyIndex, next);
+  if (0 <= keyIndex && keyIndex < NumScanSlots) {
+    inputKeyStateBuf[keyIndex] = pressed;
   }
-  keyStateBuf[keyIndex] = next;
 }
 
 void keyboardMain_processUpdate() {
